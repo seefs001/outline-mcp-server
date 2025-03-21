@@ -1,3 +1,10 @@
+## [4.12.3](https://github.com/mmmeff/outline-mcp-server/compare/v4.12.2...v4.12.3) (2025-03-21)
+
+
+### Bug Fixes
+
+* **docs:** correct API URL env var name in README ([a2854f8](https://github.com/mmmeff/outline-mcp-server/commit/a2854f8ae9bea56d2183dc93c59187fe32882ce0))
+
 ## [4.12.2](https://github.com/mmmeff/outline-mcp-server/compare/v4.12.1...v4.12.2) (2025-03-16)
 
 
