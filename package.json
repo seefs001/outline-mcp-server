@@ -25,7 +25,7 @@
     "watch": "npm run build && tsc --watch",
     "dev": "concurrently -n 'build,inspector' -c 'blue.bold,green.bold' 'npm run watch' 'npx @modelcontextprotocol/inspector build/index.js'",
     "start:stdio": "npm run build && echo 'build done. running...\n' && node build/index.js",
-    "start": "npx -y supergateway --port 6060 --stdio \"npm run start:stdio\"",
+    "start": "npx -y supergateway --cors --port 6060 --stdio \"npm run start:stdio\"",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "semantic-release": "semantic-release",
     "test:e2e": "playwright test",
