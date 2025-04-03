@@ -15,8 +15,13 @@ registerTool<CreateClippingInput>({
         properties: {
             title: { type: "string", description: "The title of the clipping" },
             content: { type: "string", description: "The content of the clipping" },
+            date: {
+                type: "string",
+                description: "Optional date for the clipping (YYYY-MM-DD format). Defaults to the current date.",
+                pattern: "^\\d{4}-\\d{2}-\\d{2}$" // Basic validation for date format
+            },
         },
-        required: ["title", "content"],
+        required: ["title", "content"], // date is optional
     },
     outputSchema: {
         type: "object",
@@ -27,9 +32,9 @@ registerTool<CreateClippingInput>({
         required: ["documentId", "dateDocumentId"],
     },
     handler: async (args: CreateClippingInput): Promise<CreateClippingOutput> => {
-        const { title, content } = args;
-        const today = new Date();
-        const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const { title, content, date } = args;
+        // Use provided date or default to today
+        const dateString = date || new Date().toISOString().split('T')[0];
 
         let dateDocumentId: string | undefined;
 

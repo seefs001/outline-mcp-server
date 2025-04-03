@@ -180,6 +180,7 @@ export type CreateTemplateFromDocumentArgs = {
 export type CreateClippingInput = {
   title: string;
   content: string;
+  date?: string; // Optional date in YYYY-MM-DD format
 };
 
 export type CreateClippingOutput = {
