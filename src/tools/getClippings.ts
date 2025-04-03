@@ -4,15 +4,17 @@ import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { outlineClient } from '../client.js';
 import { registerTool } from '../utils/listTools.js';
 
+const DEFAULT_CLIPPING_COLLECTION_ID = "7232dc22-92c8-423f-9a35-62b69c39bfd9";
+
 registerTool<GetClippingsInput>({
     name: "getClippings",
-    description: "Retrieves clipping documents from a specified collection, optionally filtering by date.",
+    description: "Retrieves clipping documents from a specified collection (defaults to the designated clipping collection if no ID is provided), optionally filtering by date.",
     inputSchema: {
         type: "object",
         properties: {
             collectionId: {
                 type: "string",
-                description: "The ID of the collection to retrieve clippings from."
+                description: `Optional ID of the collection to retrieve clippings from. Defaults to ${DEFAULT_CLIPPING_COLLECTION_ID}`
             },
             date: {
                 type: "string",
@@ -20,7 +22,7 @@ registerTool<GetClippingsInput>({
                 pattern: "^\\d{4}-\\d{2}-\\d{2}$" // Basic validation for date format
             },
         },
-        required: ["collectionId"],
+        required: [], // collectionId is now optional
     },
     outputSchema: {
         type: "object",
@@ -38,7 +40,9 @@ registerTool<GetClippingsInput>({
         required: ["clippings"]
     },
     handler: async (args: GetClippingsInput): Promise<GetClippingsOutput> => {
-        const { collectionId, date } = args;
+        // Use provided collectionId or the default
+        const targetCollectionId = args.collectionId || DEFAULT_CLIPPING_COLLECTION_ID;
+        const { date } = args;
 
         try {
             // Fetch all documents in the specified collection.
@@ -46,7 +50,7 @@ registerTool<GetClippingsInput>({
             // Outline's default limit is 25, max is 100. Fetching all might require multiple requests.
             // For simplicity, let's fetch up to 100 for now.
             const response = await outlineClient.post('/documents.list', {
-                collectionId: collectionId,
+                collectionId: targetCollectionId,
                 limit: 100, // Adjust limit as needed or implement pagination
                 // We cannot filter by date directly via API for createdAt, so we fetch and filter manually
             });
@@ -73,9 +77,9 @@ registerTool<GetClippingsInput>({
             // Handle potential 404 for collection not found
             if (error.response?.status === 404) {
                 // Use InvalidParams as NotFound is not available in McpError codes
-                throw new McpError(ErrorCode.InvalidParams, `Collection with ID ${collectionId} not found.`);
+                throw new McpError(ErrorCode.InvalidParams, `Collection with ID ${targetCollectionId} not found.`);
             }
-            console.error(`Error listing documents for collection ${collectionId}:`, error.message);
+            console.error(`Error listing documents for collection ${targetCollectionId}:`, error.message);
             throw new McpError(ErrorCode.InternalError, `Failed to list documents: ${error.message}`);
         }
     },
