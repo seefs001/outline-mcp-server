@@ -130,12 +130,16 @@ export type CreateCommentArgs = {
 
 export type UpdateCommentArgs = {
   id: string;
-  text?: string;
-  data?: Record<string, any>;
+  data: Record<string, any>; // Data is required according to the spec
 };
 
 export type DeleteCommentArgs = {
   id: string;
+};
+
+export type GetCommentArgs = {
+  id: string;
+  includeAnchorText?: boolean;
 };
 
 export type ListUsersArgs = {
