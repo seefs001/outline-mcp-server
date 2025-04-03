@@ -15,9 +15,9 @@ registerTool<CreateCommentArgs>({
         type: 'string',
         description: 'Identifier for the document this is related to.',
       },
-      text: {
-        type: 'string',
-        description: 'The body of the comment in markdown.',
+      content: { // Renamed from text
+        type: 'object', // Changed from string, assuming structured editor data
+        description: 'The content body of the comment (structured editor data).',
       },
       parentCommentId: {
         type: 'string',
@@ -28,13 +28,13 @@ registerTool<CreateCommentArgs>({
         description: 'The editor data representing this comment.',
       },
     },
-    required: ['documentId', 'text'], // Require documentId and text
+    required: ['documentId', 'content'], // Require documentId and content
   },
   handler: async function handleCreateComment(args: CreateCommentArgs) {
     try {
       const payload: Record<string, any> = {
         documentId: args.documentId,
-        text: args.text, // Text is required by CreateCommentArgs type
+        content: args.content, // Changed from text, content is required
       };
 
       if (args.parentCommentId) {

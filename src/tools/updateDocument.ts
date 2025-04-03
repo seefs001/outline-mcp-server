@@ -19,7 +19,7 @@ registerTool<UpdateDocumentArgs>({
         type: 'string',
         description: 'New title for the document',
       },
-      text: {
+      content: { // Renamed from text
         type: 'string',
         description: 'New content for the document in markdown format',
       },
@@ -48,8 +48,8 @@ registerTool<UpdateDocumentArgs>({
         payload.title = args.title;
       }
 
-      if (args.text !== undefined) {
-        payload.text = args.text;
+      if (args.content !== undefined) { // Changed from args.text
+        payload.text = args.content; // API likely still expects 'text'
       }
 
       // Handle append property

@@ -71,7 +71,7 @@ export type CreateDocumentArgs = {
 export type UpdateDocumentArgs = {
   id: string; // Renamed from documentId
   title?: string;
-  text?: string;
+  content?: string; // Renamed from text
   append?: boolean; // Added append property
   publish?: boolean;
   done?: boolean;
@@ -123,9 +123,9 @@ export type UpdateCollectionArgs = {
 
 export type CreateCommentArgs = {
   documentId: string;
-  text: string;
+  content: Record<string, any>; // Renamed from text, changed type from string
   parentCommentId?: string;
-  data?: Record<string, any>;
+  data?: Record<string, any>; // Note: 'data' might be redundant now if 'content' holds the editor data. Consider removing if appropriate.
 };
 
 export type UpdateCommentArgs = {
