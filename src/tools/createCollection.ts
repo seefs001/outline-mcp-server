@@ -1,6 +1,7 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
-import { outlineClient } from '../client.js';
+
 import { CreateCollectionArgs } from '../types.js';
+import { outlineClient } from '../client.js';
 import { registerTool } from '../utils/listTools.js';
 
 // Register this tool
@@ -19,7 +20,8 @@ registerTool<CreateCollectionArgs>({
       },
       permission: {
         type: 'string',
-        description: 'Permission level for the collection (read, read_write)',
+        description: 'Permission level for the collection',
+        enum: ['read', 'read_write'],
       },
       color: {
         type: 'string',

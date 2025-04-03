@@ -1,6 +1,7 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
-import { outlineClient } from '../client.js';
+
 import { UpdateDocumentArgs } from '../types.js';
+import { outlineClient } from '../client.js';
 import { registerTool } from '../utils/listTools.js';
 
 // Register this tool
@@ -9,9 +10,9 @@ registerTool<UpdateDocumentArgs>({
   description: 'Update an existing document',
   inputSchema: {
     properties: {
-      documentId: {
+      id: { // Renamed from documentId
         type: 'string',
-        description: 'ID of the document to update',
+        description: 'Unique identifier for the document. Either the UUID or the urlId is acceptable.',
       },
       title: {
         type: 'string',
@@ -20,6 +21,10 @@ registerTool<UpdateDocumentArgs>({
       text: {
         type: 'string',
         description: 'New content for the document in markdown format',
+      },
+      append: { // Added append property
+        type: 'boolean',
+        description: 'If true the text field will be appended to the end of the existing document, rather than the default behavior of replacing it.',
       },
       publish: {
         type: 'boolean',
@@ -30,13 +35,13 @@ registerTool<UpdateDocumentArgs>({
         description: 'Whether the document is marked as done',
       },
     },
-    required: ['documentId'],
+    required: ['id'], // Changed from documentId
     type: 'object',
   },
   handler: async function handleUpdateDocument(args: UpdateDocumentArgs) {
     try {
       const payload: Record<string, any> = {
-        id: args.documentId,
+        id: args.id, // Changed from documentId
       };
 
       if (args.title !== undefined) {
@@ -45,6 +50,11 @@ registerTool<UpdateDocumentArgs>({
 
       if (args.text !== undefined) {
         payload.text = args.text;
+      }
+
+      // Handle append property
+      if (args.append !== undefined) {
+        payload.append = args.append;
       }
 
       if (args.publish !== undefined) {

@@ -54,32 +54,41 @@ export type ListDocumentsArgs = {
 };
 
 export type GetDocumentArgs = {
-  id: string;
+  id?: string; // Made optional
+  shareId?: string; // Added optional shareId
 };
 
 export type CreateDocumentArgs = {
   title: string;
-  text: string;
+  text?: string; // Made optional
   collectionId: string;
   parentDocumentId?: string;
   publish?: boolean;
   template?: boolean;
+  templateId?: string; // Kept optional as per existing type, spec doesn't explicitly require it
 };
 
 export type UpdateDocumentArgs = {
-  documentId: string;
+  id: string; // Renamed from documentId
   title?: string;
   text?: string;
+  append?: boolean; // Added append property
   publish?: boolean;
   done?: boolean;
 };
 
 export type DeleteDocumentArgs = {
   id: string;
+  permanent?: boolean;
 };
 
 export type ListCollectionsArgs = {
   limit?: number;
+  offset?: number; // Added
+  sort?: string; // Added
+  direction?: 'ASC' | 'DESC'; // Added
+  query?: string; // Added
+  statusFilter?: ('archived')[]; // Added
 };
 
 export type GetCollectionArgs = {
@@ -99,7 +108,7 @@ export type SearchDocumentsArgs = {
 export type CreateCollectionArgs = {
   name: string;
   description?: string;
-  permission?: string;
+  permission?: 'read' | 'read_write';
   color?: string;
   private?: boolean;
 };
@@ -108,7 +117,7 @@ export type UpdateCollectionArgs = {
   id: string;
   name?: string;
   description?: string;
-  permission?: string;
+  permission?: 'read' | 'read_write';
   color?: string;
 };
 

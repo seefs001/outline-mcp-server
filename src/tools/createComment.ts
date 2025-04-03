@@ -1,6 +1,7 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
-import { outlineClient } from '../client.js';
+
 import { CreateCommentArgs } from '../types.js';
+import { outlineClient } from '../client.js';
 import { registerTool } from '../utils/listTools.js';
 
 // Register this tool
@@ -11,30 +12,34 @@ registerTool<CreateCommentArgs>({
     properties: {
       documentId: {
         type: 'string',
-        description: 'ID of the document to comment on',
+        description: 'Identifier for the document this is related to.',
       },
       text: {
         type: 'string',
-        description: 'Content of the comment in markdown format',
+        description: 'The body of the comment in markdown.',
       },
       parentCommentId: {
         type: 'string',
-        description: 'ID of the parent comment (if replying to a comment)',
+        description: 'Identifier for the comment this is a child of, if any.',
       },
       data: {
         type: 'object',
-        description: 'Additional data for the comment (optional)',
+        description: 'The editor data representing this comment.',
       },
     },
-    required: ['documentId', 'text'],
+    required: ['documentId'], // text is optional according to spec
     type: 'object',
   },
   handler: async function handleCreateComment(args: CreateCommentArgs) {
     try {
       const payload: Record<string, any> = {
         documentId: args.documentId,
-        text: args.text,
       };
+
+      // Add optional fields only if they exist
+      if (args.text !== undefined) {
+        payload.text = args.text;
+      }
 
       if (args.parentCommentId) {
         payload.parentCommentId = args.parentCommentId;
