@@ -175,3 +175,22 @@ export type AskDocumentsArgs = {
 export type CreateTemplateFromDocumentArgs = {
   id: string;
 };
+
+// Types for Clipping Tools
+export type CreateClippingInput = {
+  title: string;
+  content: string;
+};
+
+export type CreateClippingOutput = {
+  documentId: string;
+  dateDocumentId: string;
+};
+
+export type GetClippingsByDateInput = {
+  date: string; // Expecting YYYY-MM-DD format
+};
+
+export type GetClippingsByDateOutput = {
+  clippings: Document[];
+};
