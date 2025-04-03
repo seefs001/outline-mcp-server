@@ -180,18 +180,19 @@ export type CreateTemplateFromDocumentArgs = {
 export type CreateClippingInput = {
   title: string;
   content: string;
-  date?: string; // Optional date in YYYY-MM-DD format
+  collectionId: string; // ID of the collection to create the clipping in
 };
 
 export type CreateClippingOutput = {
   documentId: string;
-  dateDocumentId: string;
+  collectionId: string; // Return the collection ID
 };
 
-export type GetClippingsByDateInput = {
-  date: string; // Expecting YYYY-MM-DD format
+export type GetClippingsInput = {
+  collectionId: string; // ID of the collection to get clippings from
+  date?: string; // Optional date filter (YYYY-MM-DD format)
 };
 
-export type GetClippingsByDateOutput = {
+export type GetClippingsOutput = {
   clippings: Document[];
 };

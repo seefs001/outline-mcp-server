@@ -1,101 +1,64 @@
-import { CreateClippingInput, CreateClippingOutput } from '../types.js'; // Import types
+import { CreateClippingInput, CreateClippingOutput } from '../types.js';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 import { outlineClient } from '../client.js';
 import { registerTool } from '../utils/listTools.js';
 
-const COLLECTION_ID = "7232dc22-92c8-423f-9a35-62b69c39bfd9";
-
 // registerTool only expects the Input type argument
 registerTool<CreateClippingInput>({
     name: "createClipping",
-    description: "Creates a new clipping document under a specific date document within a designated collection.",
+    description: "Creates a new clipping document directly within a specified collection.",
     inputSchema: {
         type: "object",
         properties: {
             title: { type: "string", description: "The title of the clipping" },
             content: { type: "string", description: "The content of the clipping" },
-            date: {
-                type: "string",
-                description: "Optional date for the clipping (YYYY-MM-DD format). Defaults to the current date.",
-                pattern: "^\\d{4}-\\d{2}-\\d{2}$" // Basic validation for date format
-            },
+            collectionId: { type: "string", description: "The ID of the collection to create the clipping in" },
         },
-        required: ["title", "content"], // date is optional
+        required: ["title", "content", "collectionId"],
     },
     outputSchema: {
         type: "object",
         properties: {
             documentId: { type: "string", description: "The ID of the created clipping document" },
-            dateDocumentId: { type: "string", description: "The ID of the parent date document" },
+            collectionId: { type: "string", description: "The ID of the collection the clipping was created in" },
         },
-        required: ["documentId", "dateDocumentId"],
+        required: ["documentId", "collectionId"],
     },
     handler: async (args: CreateClippingInput): Promise<CreateClippingOutput> => {
-        const { title, content, date } = args;
-        // Use provided date or default to today
-        const dateString = date || new Date().toISOString().split('T')[0];
+        const { title, content, collectionId } = args;
 
-        let dateDocumentId: string | undefined;
-
-        // 1. Check if the date document exists
+        // Validate collection exists (optional but good practice)
         try {
-            const existingDateDocs = await outlineClient.post('/documents.list', {
-                collectionId: COLLECTION_ID,
-                title: dateString,
-            });
-
-            if (existingDateDocs.data?.data && existingDateDocs.data.data.length > 0) {
-                dateDocumentId = existingDateDocs.data.data[0].id;
-            }
+            await outlineClient.post('/collections.info', { id: collectionId });
         } catch (error: any) {
-            console.error(`Error checking for date document ${dateString}:`, error.message);
-            // Don't throw here, proceed to create if not found
-        }
-
-        // 2. Create the date document if it doesn't exist
-        if (!dateDocumentId) {
-            try {
-                const newDateDoc = await outlineClient.post('/documents.create', {
-                    collectionId: COLLECTION_ID,
-                    title: dateString,
-                    text: `# ${dateString}\n\nClippings for this date.`,
-                    publish: true,
-                });
-                if (!newDateDoc.data?.data?.id) {
-                    throw new Error("Failed to create date document, API returned no data or ID.");
-                }
-                dateDocumentId = newDateDoc.data.data.id;
-            } catch (error: any) {
-                console.error(`Error creating date document ${dateString}:`, error.message);
-                throw new McpError(ErrorCode.InternalError, `Failed to create date document: ${error.message}`);
+            if (error.response?.status === 404) {
+                throw new McpError(ErrorCode.InvalidParams, `Collection with ID ${collectionId} not found.`);
             }
+            console.error(`Error validating collection ${collectionId}:`, error.message);
+            // Proceed cautiously if validation fails for other reasons
         }
 
-        // 3. Create the clipping document
+        // Create the clipping document directly in the specified collection
         try {
-            // Ensure dateDocumentId is assigned before proceeding
-            if (typeof dateDocumentId !== 'string') {
-                throw new McpError(ErrorCode.InternalError, "Failed to determine date document ID before creating clipping.");
-            }
-
             const newClippingDoc = await outlineClient.post('/documents.create', {
-                collectionId: COLLECTION_ID,
-                parentDocumentId: dateDocumentId,
+                collectionId: collectionId,
+                // No parentDocumentId needed for top-level in collection
                 title: title,
                 text: content,
-                publish: true,
+                publish: true, // Assuming clippings should be published by default
             });
+
             if (!newClippingDoc.data?.data?.id) {
                 throw new Error("Failed to create clipping document, API returned no data or ID.");
             }
 
             return {
                 documentId: newClippingDoc.data.data.id,
-                dateDocumentId: dateDocumentId,
+                collectionId: collectionId, // Return the collection ID used
             };
         } catch (error: any) {
-            console.error(`Error creating clipping document "${title}":`, error.message);
+            console.error(`Error creating clipping document "${title}" in collection ${collectionId}:`, error.message);
             throw new McpError(ErrorCode.InternalError, `Failed to create clipping document: ${error.message}`);
         }
     },
