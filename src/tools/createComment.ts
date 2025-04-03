@@ -4,34 +4,54 @@ import { CreateCommentArgs } from '../types.js';
 import { outlineClient } from '../client.js';
 import { registerTool } from '../utils/listTools.js';
 
+// Define the wrapped argument type inline
+type WrappedCreateCommentArgs = { content: [CreateCommentArgs] };
+
 // Register this tool
-registerTool<CreateCommentArgs>({
+registerTool<WrappedCreateCommentArgs>({ // Use the wrapped type here
   name: 'create_comment',
   description: 'Create a new comment on a document',
   inputSchema: {
+    type: 'object',
     properties: {
-      documentId: {
-        type: 'string',
-        description: 'Identifier for the document this is related to.',
-      },
-      text: {
-        type: 'string',
-        description: 'The body of the comment in markdown.',
-      },
-      parentCommentId: {
-        type: 'string',
-        description: 'Identifier for the comment this is a child of, if any.',
-      },
-      data: {
-        type: 'object',
-        description: 'The editor data representing this comment.',
+      content: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            documentId: {
+              type: 'string',
+              description: 'Identifier for the document this is related to.',
+            },
+            text: {
+              type: 'string',
+              description: 'The body of the comment in markdown.',
+            },
+            parentCommentId: {
+              type: 'string',
+              description: 'Identifier for the comment this is a child of, if any.',
+            },
+            data: {
+              type: 'object',
+              description: 'The editor data representing this comment.',
+            },
+          },
+          required: ['documentId'], // text is optional according to spec
+        },
+        minItems: 1,
+        maxItems: 1,
       },
     },
-    required: ['documentId'], // text is optional according to spec
-    type: 'object',
+    required: ['content'],
   },
-  handler: async function handleCreateComment(args: CreateCommentArgs) {
+  handler: async function handleCreateComment(wrappedArgs: WrappedCreateCommentArgs) {
     try {
+      // Extract the actual arguments from the wrapped structure
+      const args = wrappedArgs.content[0];
+      if (!args) {
+        throw new McpError(ErrorCode.InvalidParams, 'Missing arguments in content array');
+      }
+
       const payload: Record<string, any> = {
         documentId: args.documentId,
       };
